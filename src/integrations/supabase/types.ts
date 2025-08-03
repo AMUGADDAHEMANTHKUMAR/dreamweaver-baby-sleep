@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          activity_type: string
+          created_at: string
+          diaper_type: string | null
+          duration: number | null
+          end_time: string | null
+          feeding_amount: number | null
+          feeding_type: string | null
+          id: string
+          notes: string | null
+          sleep_location: string | null
+          sleep_type: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          diaper_type?: string | null
+          duration?: number | null
+          end_time?: string | null
+          feeding_amount?: number | null
+          feeding_type?: string | null
+          id?: string
+          notes?: string | null
+          sleep_location?: string | null
+          sleep_type?: string | null
+          start_time: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          diaper_type?: string | null
+          duration?: number | null
+          end_time?: string | null
+          feeding_amount?: number | null
+          feeding_type?: string | null
+          id?: string
+          notes?: string | null
+          sleep_location?: string | null
+          sleep_type?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
