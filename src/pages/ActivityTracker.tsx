@@ -20,9 +20,9 @@ interface ActivityLog {
   sleep_type?: string;
   start_time?: string;
   end_time?: string;
-  duration_minutes?: number;
+  duration?: number;
   feeding_type?: string;
-  amount_ml?: number;
+  feeding_amount?: number;
   diaper_type?: string;
   custom_activity_name?: string;
   notes?: string;
@@ -127,11 +127,11 @@ const ActivityTracker = () => {
         logData.start_time = startTime;
         if (endTime) {
           logData.end_time = endTime;
-          logData.duration_minutes = calculateDuration(startTime, endTime);
+          logData.duration = calculateDuration(startTime, endTime);
         }
       } else if (activityType === 'feeding') {
         logData.feeding_type = feedingType;
-        if (amount) logData.amount_ml = parseInt(amount);
+        if (amount) logData.feeding_amount = parseInt(amount);
       } else if (activityType === 'diaper') {
         logData.diaper_type = diaperType;
       } else if (activityType === 'custom') {
@@ -186,7 +186,7 @@ const ActivityTracker = () => {
       setEndTime(log.end_time || '');
     } else if (log.activity_type === 'feeding') {
       setFeedingType((log.feeding_type as 'nursing' | 'formula') || 'nursing');
-      setAmount(log.amount_ml?.toString() || '');
+      setAmount(log.feeding_amount?.toString() || '');
     } else if (log.activity_type === 'diaper') {
       setDiaperType((log.diaper_type as 'wet' | 'dirty' | 'both') || 'wet');
     } else if (log.activity_type === 'custom') {
@@ -257,11 +257,11 @@ const ActivityTracker = () => {
     if (log.end_time) {
       details.push(`End: ${format(new Date(log.end_time), 'HH:mm')}`);
     }
-    if (log.duration_minutes) {
-      details.push(`Duration: ${Math.floor(log.duration_minutes / 60)}h ${log.duration_minutes % 60}m`);
+    if (log.duration) {
+      details.push(`Duration: ${Math.floor(log.duration / 60)}h ${log.duration % 60}m`);
     }
-    if (log.amount_ml) {
-      details.push(`Amount: ${log.amount_ml}ml`);
+    if (log.feeding_amount) {
+      details.push(`Amount: ${log.feeding_amount}ml`);
     }
     return details.join(' • ');
   };
