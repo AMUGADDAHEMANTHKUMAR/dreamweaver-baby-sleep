@@ -122,7 +122,7 @@ const Dashboard = () => {
               <CardDescription>View detailed reports and trends</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => navigate('/sleep-analytics')}>
                 <TrendingUp className="mr-2 h-4 w-4" />
                 View Reports
               </Button>

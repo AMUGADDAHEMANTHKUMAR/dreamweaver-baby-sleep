@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import ActivityTracker from "./pages/ActivityTracker";
 import BedtimeRoutine from "./pages/BedtimeRoutine";
+import SleepAnalytics from "./pages/SleepAnalytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/activity-tracker" element={<ActivityTracker />} />
             <Route path="/bedtime-routine" element={<BedtimeRoutine />} />
+            <Route path="/sleep-analytics" element={<SleepAnalytics />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
