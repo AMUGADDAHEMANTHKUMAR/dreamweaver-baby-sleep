@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Play, Pause, RotateCcw, Timer, Volume2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RotateCcw, Timer, Volume2, BookOpen, Clock, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AudioTrack {
@@ -15,6 +15,18 @@ interface AudioTrack {
   duration: string;
   description: string;
   url: string;
+}
+
+interface Article {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  ageGroup: string;
+  readTime: string;
+  lastUpdated: string;
+  tags: string[];
 }
 
 const audioTracks: AudioTrack[] = [
@@ -84,6 +96,97 @@ const audioTracks: AudioTrack[] = [
   }
 ];
 
+const articles: Article[] = [
+  {
+    id: 'newborn-sleep-patterns',
+    title: 'Understanding Newborn Sleep Patterns',
+    excerpt: 'Learn about normal sleep cycles and what to expect in the first few months.',
+    content: 'Newborns typically sleep 14-17 hours per day, but in short 2-4 hour stretches. Their sleep cycles are different from adults, with more REM sleep for brain development.',
+    category: 'Sleep Development',
+    ageGroup: '0-3 months',
+    readTime: '5 min read',
+    lastUpdated: '2024-01-15',
+    tags: ['newborn', 'sleep cycles', 'development']
+  },
+  {
+    id: 'sleep-regression-4months',
+    title: 'The 4-Month Sleep Regression',
+    excerpt: 'Why your baby\'s sleep suddenly changes and how to navigate this challenging phase.',
+    content: 'Around 4 months, babies\' sleep patterns mature, leading to more frequent night wakings. This is actually a positive developmental milestone.',
+    category: 'Sleep Development',
+    ageGroup: '3-6 months',
+    readTime: '7 min read',
+    lastUpdated: '2024-01-20',
+    tags: ['sleep regression', 'development', '4 months']
+  },
+  {
+    id: 'gentle-sleep-training',
+    title: 'Gentle Sleep Training Methods',
+    excerpt: 'Evidence-based approaches to help your baby learn independent sleep skills.',
+    content: 'Step-by-step guide to gentle sleep training methods including the pick-up-put-down method, gradual retreat, and check-and-console approaches.',
+    category: 'Sleep Training',
+    ageGroup: '4-12 months',
+    readTime: '10 min read',
+    lastUpdated: '2024-01-10',
+    tags: ['sleep training', 'gentle methods', 'independent sleep']
+  },
+  {
+    id: 'optimal-sleep-environment',
+    title: 'Creating the Perfect Sleep Environment',
+    excerpt: 'Science-backed tips for designing a nursery that promotes better sleep.',
+    content: 'Learn about optimal room temperature (68-70°F), lighting conditions, noise levels, and safe sleep practices for better rest.',
+    category: 'Sleep Environment',
+    ageGroup: 'All ages',
+    readTime: '6 min read',
+    lastUpdated: '2024-01-25',
+    tags: ['nursery', 'environment', 'safe sleep']
+  },
+  {
+    id: 'toddler-bedtime-routine',
+    title: 'Establishing Toddler Bedtime Routines',
+    excerpt: 'How to transition from baby to toddler sleep schedules and routines.',
+    content: 'Toddlers thrive on consistency. Learn how to create predictable bedtime routines that signal sleep time and reduce bedtime battles.',
+    category: 'Sleep Training',
+    ageGroup: '12+ months',
+    readTime: '8 min read',
+    lastUpdated: '2024-01-18',
+    tags: ['toddler', 'bedtime routine', 'consistency']
+  },
+  {
+    id: 'nap-transitions',
+    title: 'Navigating Nap Transitions',
+    excerpt: 'When and how to drop naps as your baby grows.',
+    content: 'Understanding when babies typically transition from 3 to 2 naps, then from 2 to 1 nap, and eventually to no naps.',
+    category: 'Sleep Development',
+    ageGroup: '6-24 months',
+    readTime: '7 min read',
+    lastUpdated: '2024-01-12',
+    tags: ['naps', 'transitions', 'schedule']
+  },
+  {
+    id: 'sleep-safety-guidelines',
+    title: 'Safe Sleep Guidelines',
+    excerpt: 'Essential safety practices to reduce SIDS risk and ensure safe sleep.',
+    content: 'Follow AAP guidelines: back sleeping, firm mattress, no loose bedding, room sharing without bed sharing, and smoke-free environment.',
+    category: 'Sleep Environment',
+    ageGroup: '0-12 months',
+    readTime: '5 min read',
+    lastUpdated: '2024-01-30',
+    tags: ['safety', 'SIDS prevention', 'AAP guidelines']
+  },
+  {
+    id: 'daylight-saving-adjustment',
+    title: 'Adjusting to Daylight Saving Time',
+    excerpt: 'Help your baby adapt to time changes with minimal disruption.',
+    content: 'Gradual schedule adjustments and light exposure strategies to help your family transition smoothly through time changes.',
+    category: 'Sleep Environment',
+    ageGroup: 'All ages',
+    readTime: '4 min read',
+    lastUpdated: '2024-01-08',
+    tags: ['daylight saving', 'schedule adjustment', 'light exposure']
+  }
+];
+
 const SleepAnalytics = () => {
   const navigate = useNavigate();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -98,6 +201,8 @@ const SleepAnalytics = () => {
   const [selectedTimer, setSelectedTimer] = useState<string>('');
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedArticleCategory, setSelectedArticleCategory] = useState<string>('all');
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('all');
 
   const categories = ['all', 'White Noise', 'Lullabies', 'Nature Sounds', 'Ambient'];
   const timerOptions = [
@@ -109,9 +214,18 @@ const SleepAnalytics = () => {
     { label: '2 hours', value: '120' },
   ];
 
+  const articleCategories = ['all', 'Sleep Development', 'Sleep Training', 'Sleep Environment'];
+  const ageGroups = ['all', '0-3 months', '3-6 months', '4-12 months', '6-24 months', '12+ months', 'All ages'];
+
   const filteredTracks = selectedCategory === 'all' 
     ? audioTracks 
     : audioTracks.filter(track => track.category === selectedCategory);
+
+  const filteredArticles = articles.filter(article => {
+    const categoryMatch = selectedArticleCategory === 'all' || article.category === selectedArticleCategory;
+    const ageMatch = selectedAgeGroup === 'all' || article.ageGroup === selectedAgeGroup;
+    return categoryMatch && ageMatch;
+  });
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -405,6 +519,102 @@ const SleepAnalytics = () => {
               <p><strong>Timer:</strong> Set a sleep timer to automatically stop playback after a set duration</p>
               <p><strong>Volume:</strong> Adjust the volume using the slider in the player controls</p>
               <p><strong>Categories:</strong> Filter tracks by category to find the perfect sound for your baby</p>
+            </CardContent>
+          </Card>
+
+          {/* Sleep Guides & Articles Section */}
+          <Card className="bg-white/90 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                Sleep Guides & Articles
+              </CardTitle>
+              <CardDescription>
+                Science-backed information and step-by-step guides to help your baby sleep better
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Article Filters */}
+              <div className="space-y-4 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Category</label>
+                    <div className="flex gap-2 flex-wrap">
+                      {articleCategories.map(category => (
+                        <Button
+                          key={category}
+                          variant={selectedArticleCategory === category ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedArticleCategory(category)}
+                        >
+                          {category === 'all' ? 'All Topics' : category}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Age Group</label>
+                    <div className="flex gap-2 flex-wrap">
+                      {ageGroups.map(ageGroup => (
+                        <Button
+                          key={ageGroup}
+                          variant={selectedAgeGroup === ageGroup ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedAgeGroup(ageGroup)}
+                        >
+                          {ageGroup === 'all' ? 'All Ages' : ageGroup}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Articles Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredArticles.map(article => (
+                  <Card key={article.id} className="bg-white border hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <Badge variant="secondary" className="text-xs">{article.category}</Badge>
+                        <Badge variant="outline" className="text-xs">{article.ageGroup}</Badge>
+                      </div>
+                      <CardTitle className="text-base leading-tight">{article.title}</CardTitle>
+                      <CardDescription className="text-sm line-clamp-2">{article.excerpt}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {article.readTime}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Updated {new Date(article.lastUpdated).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 flex-wrap mb-3">
+                        {article.tags.slice(0, 3).map(tag => (
+                          <Badge key={tag} variant="outline" className="text-xs px-2 py-1">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Read Article
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {filteredArticles.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No articles found for the selected filters.</p>
+                  <p className="text-sm">Try adjusting your category or age group selection.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
