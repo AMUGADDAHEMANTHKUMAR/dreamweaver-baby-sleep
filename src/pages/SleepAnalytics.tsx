@@ -216,7 +216,7 @@ const SleepAnalytics = () => {
   };
 
   const handleSetTimer = (minutes: string) => {
-    if (!minutes) {
+    if (!minutes || minutes === 'none') {
       setTimeRemaining(null);
       setSelectedTimer('');
       return;
@@ -321,7 +321,7 @@ const SleepAnalytics = () => {
                           <SelectValue placeholder="Set timer" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">No timer</SelectItem>
+                          <SelectItem value="none">No timer</SelectItem>
                           {timerOptions.map(option => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
