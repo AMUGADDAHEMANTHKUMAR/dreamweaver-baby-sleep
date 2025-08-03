@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Moon, Milk, Baby, StickyNote, Clock, Plus } from 'lucide-react';
+import { Moon, Milk, Baby, StickyNote, Clock, Plus, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 
 const ActivityTracker = () => {
   const [activeTab, setActiveTab] = useState('sleep');
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const SleepTracker = () => {
     const [sleepType, setSleepType] = useState('');
@@ -226,12 +227,73 @@ const ActivityTracker = () => {
     return hours * 60 + minutes;
   };
 
+  if (!isExpanded) {
+    return (
+      <Card className="bg-white/90 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Track Baby Activities
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsExpanded(true)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </CardTitle>
+          <CardDescription>Log sleep, feeding, diaper changes, and daily activities</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Button variant="outline" size="sm" onClick={() => { setActiveTab('sleep'); setIsExpanded(true); }}>
+              <Moon className="h-4 w-4 mr-1" />
+              Sleep
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { setActiveTab('feeding'); setIsExpanded(true); }}>
+              <Milk className="h-4 w-4 mr-1" />
+              Feeding
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { setActiveTab('diaper'); setIsExpanded(true); }}>
+              <Baby className="h-4 w-4 mr-1" />
+              Diaper
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { setActiveTab('notes'); setIsExpanded(true); }}>
+              <StickyNote className="h-4 w-4 mr-1" />
+              Activities
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-white/90 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          Track Baby Activities
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsExpanded(false)}
+              className="text-muted-foreground hover:text-foreground p-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            Track Baby Activities
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setIsExpanded(false)}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
         </CardTitle>
         <CardDescription>Log sleep, feeding, diaper changes, and daily activities</CardDescription>
       </CardHeader>
