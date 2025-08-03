@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Moon, Clock, TrendingUp, Settings, LogOut } from 'lucide-react';
+import { Heart, Moon, Clock, TrendingUp, Settings, LogOut, ArrowLeft, Plus, Milk, Baby, StickyNote } from 'lucide-react';
 import ActivityTracker from '@/components/ActivityTracker';
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
+  const [showActivityTracker, setShowActivityTracker] = useState(false);
 
   if (loading) {
     return (
@@ -88,53 +90,113 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Activity Tracker */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2">
+        {/* Main Content */}
+        {showActivityTracker ? (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowActivityTracker(false)}
+                className="text-white/80 hover:text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </div>
             <ActivityTracker />
           </div>
-          <div className="space-y-6">
-
-            <Card className="bg-white/90 backdrop-blur-sm">
+        ) : (
+          <>
+            {/* Quick Action Card */}
+            <Card className="bg-white/90 backdrop-blur-sm mb-8">
               <CardHeader>
-                <CardTitle>Bedtime Routine</CardTitle>
-                <CardDescription>Create and customize your evening routine</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Track Baby Activities
+                </CardTitle>
+                <CardDescription>Log sleep, feeding, diaper changes, and daily activities</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Setup Routine
-                </Button>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => setShowActivityTracker(true)}
+                  >
+                    <Moon className="h-6 w-6" />
+                    <span className="text-sm">Sleep</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => setShowActivityTracker(true)}
+                  >
+                    <Milk className="h-6 w-6" />
+                    <span className="text-sm">Feeding</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => setShowActivityTracker(true)}
+                  >
+                    <Baby className="h-6 w-6" />
+                    <span className="text-sm">Diaper</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-auto p-4 flex flex-col items-center gap-2"
+                    onClick={() => setShowActivityTracker(true)}
+                  >
+                    <StickyNote className="h-6 w-6" />
+                    <span className="text-sm">Activities</span>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Sleep Analytics</CardTitle>
-                <CardDescription>View detailed reports and trends</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full">
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  View Reports
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Action Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-white/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Bedtime Routine</CardTitle>
+                  <CardDescription>Create and customize your evening routine</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Setup Routine
+                  </Button>
+                </CardContent>
+              </Card>
 
-            <Card className="bg-white/90 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Expert Tips</CardTitle>
-                <CardDescription>Personalized recommendations for better sleep</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full">
-                  <Heart className="mr-2 h-4 w-4" />
-                  Get Tips
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              <Card className="bg-white/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Sleep Analytics</CardTitle>
+                  <CardDescription>View detailed reports and trends</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    View Reports
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/90 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Expert Tips</CardTitle>
+                  <CardDescription>Personalized recommendations for better sleep</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full">
+                    <Heart className="mr-2 h-4 w-4" />
+                    Get Tips
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
