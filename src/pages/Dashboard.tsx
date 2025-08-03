@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Moon, Clock, TrendingUp, Settings, LogOut } from 'lucide-react';
+import ActivityTracker from '@/components/ActivityTracker';
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
@@ -87,59 +88,52 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-white/90 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Start Sleep Tracking</CardTitle>
-              <CardDescription>Log your baby's sleep patterns and build insights</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">
-                <Moon className="mr-2 h-4 w-4" />
-                Track Sleep Now
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Activity Tracker */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2">
+            <ActivityTracker />
+          </div>
+          <div className="space-y-6">
 
-          <Card className="bg-white/90 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Bedtime Routine</CardTitle>
-              <CardDescription>Create and customize your evening routine</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <Settings className="mr-2 h-4 w-4" />
-                Setup Routine
-              </Button>
-            </CardContent>
-          </Card>
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Bedtime Routine</CardTitle>
+                <CardDescription>Create and customize your evening routine</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Setup Routine
+                </Button>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Sleep Analytics</CardTitle>
-              <CardDescription>View detailed reports and trends</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <TrendingUp className="mr-2 h-4 w-4" />
-                View Reports
-              </Button>
-            </CardContent>
-          </Card>
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Sleep Analytics</CardTitle>
+                <CardDescription>View detailed reports and trends</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  View Reports
+                </Button>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>Expert Tips</CardTitle>
-              <CardDescription>Personalized recommendations for better sleep</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <Heart className="mr-2 h-4 w-4" />
-                Get Tips
-              </Button>
-            </CardContent>
-          </Card>
+            <Card className="bg-white/90 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Expert Tips</CardTitle>
+                <CardDescription>Personalized recommendations for better sleep</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  <Heart className="mr-2 h-4 w-4" />
+                  Get Tips
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>
