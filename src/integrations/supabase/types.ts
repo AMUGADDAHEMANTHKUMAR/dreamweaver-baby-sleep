@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           activity_type: string
           created_at: string
+          custom_activity_name: string | null
           diaper_type: string | null
           duration: number | null
           end_time: string | null
@@ -27,13 +28,14 @@ export type Database = {
           notes: string | null
           sleep_location: string | null
           sleep_type: string | null
-          start_time: string
+          start_time: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           activity_type: string
           created_at?: string
+          custom_activity_name?: string | null
           diaper_type?: string | null
           duration?: number | null
           end_time?: string | null
@@ -43,13 +45,14 @@ export type Database = {
           notes?: string | null
           sleep_location?: string | null
           sleep_type?: string | null
-          start_time: string
+          start_time?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           activity_type?: string
           created_at?: string
+          custom_activity_name?: string | null
           diaper_type?: string | null
           duration?: number | null
           end_time?: string | null
@@ -59,7 +62,7 @@ export type Database = {
           notes?: string | null
           sleep_location?: string | null
           sleep_type?: string | null
-          start_time?: string
+          start_time?: string | null
           updated_at?: string
           user_id?: string
         }

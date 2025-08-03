@@ -132,8 +132,12 @@ const ActivityTracker = () => {
       } else if (activityType === 'feeding') {
         logData.feeding_type = feedingType;
         if (amount) logData.feeding_amount = parseInt(amount);
+        // Set start_time to current time for instant activities
+        logData.start_time = new Date().toISOString();
       } else if (activityType === 'diaper') {
         logData.diaper_type = diaperType;
+        // Set start_time to current time for instant activities
+        logData.start_time = new Date().toISOString();
       } else if (activityType === 'custom') {
         if (!customActivity) {
           toast({
@@ -144,6 +148,8 @@ const ActivityTracker = () => {
           return;
         }
         logData.custom_activity_name = customActivity;
+        // Set start_time to current time for instant activities
+        logData.start_time = new Date().toISOString();
       }
 
       let error;
