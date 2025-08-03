@@ -3,10 +3,13 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Moon, Clock, TrendingUp, Settings, LogOut } from 'lucide-react';
+import ExpertTips from '@/components/ExpertTips';
+import { useState } from 'react';
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const [isExpertTipsOpen, setIsExpertTipsOpen] = useState(false);
 
   if (loading) {
     return (
@@ -135,7 +138,7 @@ const Dashboard = () => {
               <CardDescription>Personalized recommendations for better sleep</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => setIsExpertTipsOpen(true)}>
                 <Heart className="mr-2 h-4 w-4" />
                 Get Tips
               </Button>
@@ -143,6 +146,12 @@ const Dashboard = () => {
           </Card>
         </div>
       </main>
+      
+      {/* Expert Tips Modal */}
+      <ExpertTips 
+        isOpen={isExpertTipsOpen} 
+        onClose={() => setIsExpertTipsOpen(false)} 
+      />
     </div>
   );
 };
