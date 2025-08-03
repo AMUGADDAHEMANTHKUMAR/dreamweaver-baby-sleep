@@ -32,12 +32,9 @@ export const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button variant="hero" size="lg" className="text-lg px-8 py-6">
+            <Button variant="hero" size="lg" className="text-lg px-8 py-6" onClick={() => window.location.href = '/auth'}>
               Start Tracking
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="warm" size="lg" className="text-lg px-8 py-6">
-              Explore Features
             </Button>
           </div>
           
