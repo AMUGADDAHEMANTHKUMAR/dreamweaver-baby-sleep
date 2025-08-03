@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Clock, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Clock, Moon, Sun, Bell, CheckCircle, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const formSchema = z.object({
   babyAgeMonths: z.string().min(1, "Please select baby's age"),
@@ -103,8 +106,12 @@ const sleepRecommendations = {
 
 const BedtimeRoutine = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [showSchedule, setShowSchedule] = useState(false);
   const [recommendedSchedule, setRecommendedSchedule] = useState<any>(null);
+  const [currentScheduleId, setCurrentScheduleId] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -117,11 +124,226 @@ const BedtimeRoutine = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  // Load existing schedule and notifications on mount
+  useEffect(() => {
+    if (user) {
+      loadExistingSchedule();
+      loadNotifications();
+    }
+  }, [user]);
+
+  const loadExistingSchedule = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('sleep_schedules')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const schedule = data[0];
+        setCurrentScheduleId(schedule.id);
+        
+        // Populate form with existing data
+        form.setValue('babyAgeMonths', schedule.baby_age_months.toString());
+        form.setValue('currentBedtime', schedule.current_bedtime);
+        form.setValue('currentWakeTime', schedule.current_wake_time);
+        form.setValue('napHabits', schedule.nap_habits);
+        form.setValue('sleepChallenges', schedule.sleep_challenges || '');
+
+        // Set up the recommended schedule view
+        const ageRange = getAgeRange(schedule.baby_age_months.toString());
+        const recommendations = sleepRecommendations[ageRange];
+        setRecommendedSchedule({
+          ...recommendations,
+          ageRange,
+          formData: {
+            babyAgeMonths: schedule.baby_age_months.toString(),
+            currentBedtime: schedule.current_bedtime,
+            currentWakeTime: schedule.current_wake_time,
+            napHabits: schedule.nap_habits,
+            sleepChallenges: schedule.sleep_challenges || '',
+          }
+        });
+        setShowSchedule(true);
+
+        // Check if schedule needs updating based on age milestones
+        checkForScheduleUpdates(schedule);
+      }
+    } catch (error) {
+      console.error('Error loading existing schedule:', error);
+    }
+  };
+
+  const loadNotifications = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('schedule_notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  };
+
+  const checkForScheduleUpdates = async (currentSchedule: any) => {
+    const currentAge = currentSchedule.baby_age_months;
+    const currentAgeRange = getAgeRange(currentAge.toString());
+    
+    // Check if baby has reached a new age milestone
+    const ageMilestones = [3, 5, 7, 13];
+    const recentMilestone = ageMilestones.find(milestone => 
+      currentAge >= milestone && currentAge < milestone + 1
+    );
+
+    if (recentMilestone) {
+      const newAgeRange = getAgeRange(currentAge.toString());
+      const newRecommendations = sleepRecommendations[newAgeRange];
+      
+      // Create notification for schedule update
+      await createScheduleNotification({
+        scheduleId: currentSchedule.id,
+        type: 'age_milestone',
+        message: `Your baby has reached ${currentAge} months! We recommend updating their sleep schedule.`,
+        suggestedChanges: newRecommendations
+      });
+    }
+  };
+
+  const createScheduleNotification = async ({ scheduleId, type, message, suggestedChanges }: any) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('schedule_notifications')
+        .insert({
+          user_id: user.id,
+          sleep_schedule_id: scheduleId,
+          notification_type: type,
+          message,
+          suggested_changes: suggestedChanges
+        });
+
+      if (error) throw error;
+      await loadNotifications();
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const ageRange = getAgeRange(values.babyAgeMonths);
     const schedule = sleepRecommendations[ageRange];
     setRecommendedSchedule({ ...schedule, ageRange, formData: values });
     setShowSchedule(true);
+    
+    // Save to database if user is logged in
+    if (user) {
+      await saveScheduleToDatabase(values, schedule, ageRange);
+    }
+  };
+
+  const saveScheduleToDatabase = async (formData: any, schedule: any, ageRange: string) => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      // Deactivate current schedule
+      if (currentScheduleId) {
+        await supabase
+          .from('sleep_schedules')
+          .update({ is_active: false })
+          .eq('id', currentScheduleId);
+      }
+
+      // Save new schedule
+      const { data, error } = await supabase
+        .from('sleep_schedules')
+        .insert({
+          user_id: user.id,
+          baby_age_months: parseInt(formData.babyAgeMonths),
+          current_bedtime: formData.currentBedtime,
+          current_wake_time: formData.currentWakeTime,
+          nap_habits: formData.napHabits,
+          sleep_challenges: formData.sleepChallenges || null,
+          schedule_data: {
+            ageRange,
+            recommendations: schedule,
+            formData
+          }
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setCurrentScheduleId(data.id);
+      toast.success('Sleep schedule saved successfully!');
+    } catch (error) {
+      console.error('Error saving schedule:', error);
+      toast.error('Failed to save schedule. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleApproveNotification = async (notificationId: string, suggestedChanges: any) => {
+    if (!user) return;
+
+    try {
+      // Update notification as approved
+      await supabase
+        .from('schedule_notifications')
+        .update({ is_approved: true, is_read: true })
+        .eq('id', notificationId);
+
+      // Apply the suggested changes
+      const newAgeRange = getAgeRange(suggestedChanges.ageRange || '12');
+      setRecommendedSchedule({
+        ...suggestedChanges,
+        ageRange: newAgeRange,
+        formData: recommendedSchedule.formData
+      });
+
+      // Save updated schedule
+      await saveScheduleToDatabase(recommendedSchedule.formData, suggestedChanges, newAgeRange);
+      
+      toast.success('Schedule updated successfully!');
+      await loadNotifications();
+    } catch (error) {
+      console.error('Error approving notification:', error);
+      toast.error('Failed to update schedule. Please try again.');
+    }
+  };
+
+  const handleDismissNotification = async (notificationId: string) => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('schedule_notifications')
+        .update({ is_read: true, is_approved: false })
+        .eq('id', notificationId);
+
+      toast.success('Notification dismissed');
+      await loadNotifications();
+    } catch (error) {
+      console.error('Error dismissing notification:', error);
+      toast.error('Failed to dismiss notification');
+    }
   };
 
   const getAgeRange = (ageString: string): keyof typeof sleepRecommendations => {
@@ -148,6 +370,42 @@ const BedtimeRoutine = () => {
 
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto space-y-6">
+            {/* Notifications */}
+            {notifications.length > 0 && (
+              <div className="space-y-3">
+                {notifications.map((notification) => (
+                  <Card key={notification.id} className="bg-amber-50 border-amber-200">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-3">
+                        <Bell className="h-5 w-5 text-amber-600 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-amber-800">{notification.message}</p>
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              onClick={() => handleApproveNotification(notification.id, notification.suggested_changes)}
+                              className="bg-amber-600 hover:bg-amber-700"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Update Schedule
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDismissNotification(notification.id)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Dismiss
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="bg-white/90 backdrop-blur-sm">

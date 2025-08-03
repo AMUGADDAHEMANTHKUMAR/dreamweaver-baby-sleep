@@ -98,6 +98,95 @@ export type Database = {
         }
         Relationships: []
       }
+      schedule_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          is_read: boolean
+          message: string
+          notification_type: string
+          sleep_schedule_id: string
+          suggested_changes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_read?: boolean
+          message: string
+          notification_type: string
+          sleep_schedule_id: string
+          suggested_changes: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          sleep_schedule_id?: string
+          suggested_changes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_notifications_sleep_schedule_id_fkey"
+            columns: ["sleep_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "sleep_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sleep_schedules: {
+        Row: {
+          baby_age_months: number
+          created_at: string
+          current_bedtime: string
+          current_wake_time: string
+          id: string
+          is_active: boolean
+          nap_habits: string
+          schedule_data: Json
+          sleep_challenges: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          baby_age_months: number
+          created_at?: string
+          current_bedtime: string
+          current_wake_time: string
+          id?: string
+          is_active?: boolean
+          nap_habits: string
+          schedule_data: Json
+          sleep_challenges?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          baby_age_months?: number
+          created_at?: string
+          current_bedtime?: string
+          current_wake_time?: string
+          id?: string
+          is_active?: boolean
+          nap_habits?: string
+          schedule_data?: Json
+          sleep_challenges?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
