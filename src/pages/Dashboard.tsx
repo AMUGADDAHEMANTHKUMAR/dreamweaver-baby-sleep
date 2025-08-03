@@ -96,7 +96,7 @@ const Dashboard = () => {
               <CardDescription>Log your baby's sleep patterns and build insights</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" onClick={() => navigate('/sleep-tracker')}>
+              <Button className="w-full" onClick={() => navigate('/activity-tracker')}>
                 <Moon className="mr-2 h-4 w-4" />
                 Track Sleep Now
               </Button>
