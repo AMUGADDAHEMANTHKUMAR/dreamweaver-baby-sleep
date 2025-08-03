@@ -1,11 +1,12 @@
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Moon, Clock, TrendingUp, Settings, LogOut } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
