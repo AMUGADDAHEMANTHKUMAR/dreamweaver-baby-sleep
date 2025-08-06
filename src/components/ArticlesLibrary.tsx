@@ -327,7 +327,15 @@ const ArticlesLibrary = () => {
                 <Badge variant="default" className="text-xs">
                   {article.category}
                 </Badge>
-                <Button size="sm" className="w-full">
+                <Button 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => {
+                    // Create a modal dialog or expanded view with the article content
+                    toast.success(`Opening article: ${article.title}`);
+                    // You can implement a modal here or redirect to a detailed view
+                  }}
+                >
                   <BookOpen className="h-3 w-3 mr-1" />
                   Read Article
                 </Button>

@@ -25,38 +25,135 @@ interface SearchResult {
   preview_url: string;
 }
 
+// Generate gentle baby-safe audio using Web Audio API
+const generateGentleAudio = (type: 'white' | 'brown' | 'rain' | 'ocean') => {
+  return new Promise<string>((resolve) => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const duration = 10; // 10 seconds for demo
+    const sampleRate = audioContext.sampleRate;
+    const frameCount = sampleRate * duration;
+    const arrayBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
+    const channelData = arrayBuffer.getChannelData(0);
+
+    // Generate gentle baby-safe sounds
+    for (let i = 0; i < frameCount; i++) {
+      let sample = 0;
+      switch (type) {
+        case 'white':
+          // Very gentle white noise
+          sample = (Math.random() - 0.5) * 0.1;
+          break;
+        case 'brown':
+          // Warm, low-frequency brown noise
+          sample = (Math.random() - 0.5) * 0.08 * Math.sin(i * 0.001);
+          break;
+        case 'rain':
+          // Gentle rain simulation
+          sample = Math.random() > 0.97 ? (Math.random() - 0.5) * 0.05 : 0;
+          break;
+        case 'ocean':
+          // Gentle wave sounds
+          sample = Math.sin(i * 0.001 + Math.sin(i * 0.0001) * 0.5) * 0.03;
+          break;
+      }
+      channelData[i] = sample;
+    }
+
+    // Convert to data URL
+    const wavArrayBuffer = audioBufferToWav(arrayBuffer);
+    const blob = new Blob([wavArrayBuffer], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    resolve(url);
+  });
+};
+
+// Convert AudioBuffer to WAV format
+const audioBufferToWav = (buffer: AudioBuffer) => {
+  const length = buffer.length;
+  const arrayBuffer = new ArrayBuffer(44 + length * 2);
+  const view = new DataView(arrayBuffer);
+  const channelData = buffer.getChannelData(0);
+
+  // WAV header
+  const writeString = (offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + length * 2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, buffer.sampleRate, true);
+  view.setUint32(28, buffer.sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, length * 2, true);
+
+  // Convert float samples to 16-bit PCM
+  let offset = 44;
+  for (let i = 0; i < length; i++) {
+    const sample = Math.max(-1, Math.min(1, channelData[i]));
+    view.setInt16(offset, sample * 0x7FFF, true);
+    offset += 2;
+  }
+
+  return arrayBuffer;
+};
+
 const predefinedTracks: AudioTrack[] = [
   {
-    id: 'white-noise-1',
-    title: 'Classic White Noise',
+    id: 'gentle-white-noise',
+    title: 'Gentle White Noise',
     category: 'White Noise',
     duration: '60:00',
-    description: 'Consistent static sound to mask background noise',
-    url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjuZ2e7Fe+fE'
+    description: 'Ultra-soft white noise perfect for baby sleep',
+    url: ''
   },
   {
-    id: 'brown-noise-1',
-    title: 'Brown Noise',
+    id: 'warm-brown-noise',
+    title: 'Warm Brown Noise',
     category: 'White Noise',
     duration: '60:00',
-    description: 'Deeper, warmer noise for better sleep',
-    url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjuZ2e7Fe+fE'
+    description: 'Deep, warming sounds to soothe your baby',
+    url: ''
   },
   {
-    id: 'ocean-waves',
-    title: 'Ocean Waves',
+    id: 'gentle-rain',
+    title: 'Gentle Rain Drops',
     category: 'Nature Sounds',
     duration: '45:00',
-    description: 'Gentle waves lapping on a peaceful shore',
-    url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjuZ2e7Fe+fE'
+    description: 'Soft rainfall sounds for peaceful sleep',
+    url: ''
   },
   {
-    id: 'rain-sounds',
-    title: 'Rain on Leaves',
+    id: 'ocean-lullaby',
+    title: 'Ocean Lullaby',
     category: 'Nature Sounds',
     duration: '30:00',
-    description: 'Soft rainfall through forest canopy',
-    url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjuZ2e7Fe+fE'
+    description: 'Gentle ocean waves to calm your little one',
+    url: ''
+  },
+  {
+    id: 'heartbeat',
+    title: 'Heartbeat Rhythm',
+    category: 'Lullabies',
+    duration: '20:00',
+    description: 'Comforting heartbeat sound like in the womb',
+    url: ''
+  },
+  {
+    id: 'soft-hum',
+    title: 'Soft Humming',
+    category: 'Lullabies',
+    duration: '25:00',
+    description: 'Gentle humming melody for sweet dreams',
+    url: ''
   }
 ];
 
@@ -90,6 +187,79 @@ const AudioLibrary = () => {
   const filteredTracks = selectedCategory === 'all' 
     ? predefinedTracks 
     : predefinedTracks.filter(track => track.category === selectedCategory);
+
+  // Generate audio URLs when component mounts
+  useEffect(() => {
+    const generateAudioUrls = async () => {
+      const tracks = [...predefinedTracks];
+      tracks[0].url = await generateGentleAudio('white');
+      tracks[1].url = await generateGentleAudio('brown');
+      tracks[2].url = await generateGentleAudio('rain');
+      tracks[3].url = await generateGentleAudio('ocean');
+      
+      // Generate heartbeat and humming using simple sine waves
+      tracks[4].url = await generateHeartbeat();
+      tracks[5].url = await generateHumming();
+    };
+    
+    generateAudioUrls();
+  }, []);
+
+  const generateHeartbeat = () => {
+    return new Promise<string>((resolve) => {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 10;
+      const sampleRate = audioContext.sampleRate;
+      const frameCount = sampleRate * duration;
+      const arrayBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
+      const channelData = arrayBuffer.getChannelData(0);
+
+      for (let i = 0; i < frameCount; i++) {
+        // Gentle heartbeat pattern: lub-dub, lub-dub
+        const time = i / sampleRate;
+        const beat = Math.floor(time * 1.2) % 2; // 1.2 beats per second
+        const beatTime = (time * 1.2) % 1;
+        
+        let sample = 0;
+        if (beatTime < 0.1) {
+          sample = Math.sin(beatTime * Math.PI * 20) * 0.02; // lub
+        } else if (beatTime < 0.2 && beatTime > 0.15) {
+          sample = Math.sin((beatTime - 0.15) * Math.PI * 40) * 0.015; // dub
+        }
+        
+        channelData[i] = sample;
+      }
+
+      const wavArrayBuffer = audioBufferToWav(arrayBuffer);
+      const blob = new Blob([wavArrayBuffer], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      resolve(url);
+    });
+  };
+
+  const generateHumming = () => {
+    return new Promise<string>((resolve) => {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 10;
+      const sampleRate = audioContext.sampleRate;
+      const frameCount = sampleRate * duration;
+      const arrayBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
+      const channelData = arrayBuffer.getChannelData(0);
+
+      for (let i = 0; i < frameCount; i++) {
+        // Gentle humming melody
+        const time = i / sampleRate;
+        const frequency = 220 + Math.sin(time * 0.5) * 30; // Gentle variation around A3
+        const sample = Math.sin(time * frequency * 2 * Math.PI) * 0.03;
+        channelData[i] = sample;
+      }
+
+      const wavArrayBuffer = audioBufferToWav(arrayBuffer);
+      const blob = new Blob([wavArrayBuffer], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      resolve(url);
+    });
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
