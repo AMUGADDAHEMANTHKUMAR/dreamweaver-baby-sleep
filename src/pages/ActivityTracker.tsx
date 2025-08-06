@@ -156,7 +156,7 @@ const ActivityTracker = () => {
         // Set start_time to current time for instant activities
         logData.start_time = new Date().toISOString();
       } else if (activityType === 'custom') {
-        if (!customActivity) {
+        if (!customActivity.trim()) {
           toast({
             title: "Error",
             description: "Activity name is required",
@@ -164,7 +164,7 @@ const ActivityTracker = () => {
           });
           return;
         }
-        logData.custom_activity_name = customActivity;
+        logData.custom_activity_name = customActivity.trim();
         // Set start_time to current time for instant activities
         logData.start_time = new Date().toISOString();
       }
@@ -183,19 +183,41 @@ const ActivityTracker = () => {
         error = insertError;
       }
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
         description: `Activity ${editingLog ? 'updated' : 'logged'} successfully`,
       });
 
-      resetForm();
+      // Reset only the relevant form fields
+      if (activityType === 'sleep') {
+        setStartTime('');
+        setEndTime('');
+        setSleepNotes('');
+      } else if (activityType === 'feeding') {
+        setAmount('');
+        setFeedingNotes('');
+      } else if (activityType === 'diaper') {
+        setDiaperNotes('');
+      } else if (activityType === 'custom') {
+        setCustomActivity('');
+        setCustomNotes('');
+      }
+      
+      if (editingLog) {
+        setEditingLog(null);
+      }
+      
       fetchLogs();
     } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: "Error",
-        description: `Failed to ${editingLog ? 'update' : 'log'} activity`,
+        description: `Failed to ${editingLog ? 'update' : 'log'} activity. Please try again.`,
         variant: "destructive",
       });
     }
@@ -376,7 +398,11 @@ const ActivityTracker = () => {
                       onChange={(e) => setSleepNotes(e.target.value)}
                     />
                   </div>
-                  <Button onClick={() => handleSubmit('sleep')} className="w-full">
+                  <Button 
+                    onClick={() => handleSubmit('sleep')} 
+                    className="w-full"
+                    disabled={!startTime.trim()}
+                  >
                     {editingLog?.activity_type === 'sleep' ? 'Update' : 'Log'} Sleep
                   </Button>
                 </CardContent>
@@ -495,7 +521,11 @@ const ActivityTracker = () => {
                       onChange={(e) => setCustomNotes(e.target.value)}
                     />
                   </div>
-                  <Button onClick={() => handleSubmit('custom')} className="w-full">
+                  <Button 
+                    onClick={() => handleSubmit('custom')} 
+                    className="w-full"
+                    disabled={!customActivity.trim()}
+                  >
                     {editingLog?.activity_type === 'custom' ? 'Update' : 'Log'} Activity
                   </Button>
                 </CardContent>

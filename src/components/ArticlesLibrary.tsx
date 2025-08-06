@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Clock, Calendar, Search, ExternalLink } from 'lucide-react';
+import { BookOpen, Clock, Calendar, Search, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Article {
@@ -80,6 +80,7 @@ const ArticlesLibrary = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedArticleCategory, setSelectedArticleCategory] = useState<string>('all');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('all');
+  const [loadingArticles, setLoadingArticles] = useState<Record<string, boolean>>({});
 
   const articleCategories = ['all', 'Sleep Development', 'Sleep Training', 'Sleep Environment'];
   const ageGroups = ['all', '0-3 months', '3-6 months', '4-12 months', '6-24 months', '12+ months', 'All ages'];
@@ -161,9 +162,27 @@ const ArticlesLibrary = () => {
 
   const openWikipediaArticle = (article: Article) => {
     if (article.wikipediaUrl) {
-      window.open(article.wikipediaUrl, '_blank', 'noopener,noreferrer');
-      toast.success('Opening Wikipedia article in new tab');
+      const articleId = article.id.includes('wiki-') ? article.id.split('-')[1] : article.id;
+      setLoadingArticles(prev => ({ ...prev, [articleId]: true }));
+      
+      setTimeout(() => {
+        window.open(article.wikipediaUrl, '_blank', 'noopener,noreferrer');
+        toast.success('Opened Wikipedia article in new tab');
+        setLoadingArticles(prev => ({ ...prev, [articleId]: false }));
+      }, 1000);
+    } else {
+      toast.error('Article link not available');
     }
+  };
+
+  const openCuratedArticle = (article: Article) => {
+    setLoadingArticles(prev => ({ ...prev, [article.id]: true }));
+    
+    setTimeout(() => {
+      toast.success(`Opening article: ${article.title}`);
+      // Simulate opening article content
+      setLoadingArticles(prev => ({ ...prev, [article.id]: false }));
+    }, 1000);
   };
 
   return (
@@ -277,9 +296,14 @@ const ArticlesLibrary = () => {
                         variant="outline" 
                         onClick={() => openWikipediaArticle(article)}
                         className="flex items-center gap-1"
+                        disabled={loadingArticles[article.id.split('-')[1]]}
                       >
-                        <ExternalLink className="h-3 w-3" />
-                        Full Article
+                        {loadingArticles[article.id.split('-')[1]] ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <ExternalLink className="h-3 w-3" />
+                        )}
+                        {loadingArticles[article.id.split('-')[1]] ? 'Opening...' : 'Full Article'}
                       </Button>
                     )}
                   </div>
@@ -330,14 +354,15 @@ const ArticlesLibrary = () => {
                 <Button 
                   size="sm" 
                   className="w-full"
-                  onClick={() => {
-                    // Create a modal dialog or expanded view with the article content
-                    toast.success(`Opening article: ${article.title}`);
-                    // You can implement a modal here or redirect to a detailed view
-                  }}
+                  onClick={() => openCuratedArticle(article)}
+                  disabled={loadingArticles[article.id]}
                 >
-                  <BookOpen className="h-3 w-3 mr-1" />
-                  Read Article
+                  {loadingArticles[article.id] ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <BookOpen className="h-3 w-3 mr-1" />
+                  )}
+                  {loadingArticles[article.id] ? 'Opening...' : 'Read Article'}
                 </Button>
               </CardContent>
             </Card>
