@@ -51,7 +51,12 @@ const ActivityTracker = () => {
   const [amount, setAmount] = useState('');
   const [diaperType, setDiaperType] = useState<'wet' | 'dirty' | 'both'>('wet');
   const [customActivity, setCustomActivity] = useState('');
-  const [notes, setNotes] = useState('');
+  
+  // Separate notes for each section
+  const [sleepNotes, setSleepNotes] = useState('');
+  const [feedingNotes, setFeedingNotes] = useState('');
+  const [diaperNotes, setDiaperNotes] = useState('');
+  const [customNotes, setCustomNotes] = useState('');
 
   if (loading) {
     return (
@@ -101,16 +106,28 @@ const ActivityTracker = () => {
     setEndTime('');
     setAmount('');
     setCustomActivity('');
-    setNotes('');
+    setSleepNotes('');
+    setFeedingNotes('');
+    setDiaperNotes('');
+    setCustomNotes('');
     setEditingLog(null);
   };
 
   const handleSubmit = async (activityType: 'sleep' | 'feeding' | 'diaper' | 'custom') => {
     try {
+      // Get the appropriate notes for this activity type
+      let currentNotes = '';
+      switch (activityType) {
+        case 'sleep': currentNotes = sleepNotes; break;
+        case 'feeding': currentNotes = feedingNotes; break;
+        case 'diaper': currentNotes = diaperNotes; break;
+        case 'custom': currentNotes = customNotes; break;
+      }
+
       let logData: any = {
         user_id: user.id,
         activity_type: activityType,
-        notes: notes || null,
+        notes: currentNotes || null,
       };
 
       if (activityType === 'sleep') {
@@ -198,7 +215,14 @@ const ActivityTracker = () => {
     } else if (log.activity_type === 'custom') {
       setCustomActivity(log.custom_activity_name || '');
     }
-    setNotes(log.notes || '');
+    
+    // Set the appropriate notes based on activity type
+    switch (log.activity_type) {
+      case 'sleep': setSleepNotes(log.notes || ''); break;
+      case 'feeding': setFeedingNotes(log.notes || ''); break;
+      case 'diaper': setDiaperNotes(log.notes || ''); break;
+      case 'custom': setCustomNotes(log.notes || ''); break;
+    }
     setActiveTab('log');
   };
 
@@ -348,8 +372,8 @@ const ActivityTracker = () => {
                     <Textarea
                       id="sleep-notes"
                       placeholder="Any observations..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      value={sleepNotes}
+                      onChange={(e) => setSleepNotes(e.target.value)}
                     />
                   </div>
                   <Button onClick={() => handleSubmit('sleep')} className="w-full">
@@ -395,8 +419,8 @@ const ActivityTracker = () => {
                     <Textarea
                       id="feeding-notes"
                       placeholder="Any observations..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      value={feedingNotes}
+                      onChange={(e) => setFeedingNotes(e.target.value)}
                     />
                   </div>
                   <Button onClick={() => handleSubmit('feeding')} className="w-full">
@@ -433,8 +457,8 @@ const ActivityTracker = () => {
                     <Textarea
                       id="diaper-notes"
                       placeholder="Any observations..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      value={diaperNotes}
+                      onChange={(e) => setDiaperNotes(e.target.value)}
                     />
                   </div>
                   <Button onClick={() => handleSubmit('diaper')} className="w-full">
@@ -467,8 +491,8 @@ const ActivityTracker = () => {
                     <Textarea
                       id="custom-notes"
                       placeholder="Any details about the activity..."
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      value={customNotes}
+                      onChange={(e) => setCustomNotes(e.target.value)}
                     />
                   </div>
                   <Button onClick={() => handleSubmit('custom')} className="w-full">

@@ -125,14 +125,47 @@ const ExpertTips = ({ isOpen, onClose }: ExpertTipsProps) => {
         };
       }
 
-      if (activity.duration) {
+      // More accurate sleep duration calculation
+      if (activity.duration && activity.duration > 0) {
         dailyData[date].totalSleep += activity.duration;
+      } else if (activity.start_time && activity.end_time) {
+        // Calculate duration from start and end times
+        const startTime = new Date(activity.start_time);
+        const endTime = new Date(activity.end_time);
+        const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+        if (durationMinutes > 0 && durationMinutes < 1440) { // Valid duration (less than 24 hours)
+          dailyData[date].totalSleep += durationMinutes;
+        }
       }
 
-      // Count night wakings (sleep sessions between 10 PM and 6 AM)
-      const hour = new Date(activity.start_time || activity.created_at).getHours();
-      if ((hour >= 22 || hour <= 6) && activity.sleep_type !== 'nap') {
+      // More accurate night waking calculation
+      const startTime = new Date(activity.start_time || activity.created_at);
+      const hour = startTime.getHours();
+      
+      // Count as night waking if:
+      // 1. It's nighttime sleep (not nap)
+      // 2. It's between 8 PM and 7 AM
+      // 3. Duration is less than 4 hours (likely a waking, not full night sleep)
+      if (activity.sleep_type === 'nighttime' && 
+          (hour >= 20 || hour <= 7) && 
+          (!activity.duration || activity.duration < 240)) {
         dailyData[date].nightWakings += 1;
+      }
+
+      // Track bedtime and wake time more accurately
+      if (activity.sleep_type === 'nighttime') {
+        const startHour = new Date(activity.start_time || activity.created_at).getHours();
+        const endHour = activity.end_time ? new Date(activity.end_time).getHours() : null;
+        
+        // Bedtime: evening sleep start (between 6 PM and 11 PM)
+        if (startHour >= 18 && startHour <= 23 && (!dailyData[date].bedtime || startHour < parseInt(dailyData[date].bedtime))) {
+          dailyData[date].bedtime = startTime.toTimeString().slice(0, 5);
+        }
+        
+        // Wake time: morning sleep end (between 5 AM and 10 AM)
+        if (endHour && endHour >= 5 && endHour <= 10 && (!dailyData[date].wakeTime || endHour > parseInt(dailyData[date].wakeTime))) {
+          dailyData[date].wakeTime = new Date(activity.end_time!).toTimeString().slice(0, 5);
+        }
       }
     });
 
@@ -156,10 +189,27 @@ const ExpertTips = ({ isOpen, onClose }: ExpertTipsProps) => {
       }
 
       dailyData[date].frequency += 1;
-      if (activity.duration) {
-        dailyData[date].avgDuration = (dailyData[date].avgDuration + activity.duration) / dailyData[date].frequency;
+      
+      // More accurate duration calculation
+      if (activity.duration && activity.duration > 0) {
+        // Running average calculation
+        const currentAvg = dailyData[date].avgDuration;
+        const currentCount = dailyData[date].frequency;
+        dailyData[date].avgDuration = ((currentAvg * (currentCount - 1)) + activity.duration) / currentCount;
+      } else if (activity.start_time && activity.end_time) {
+        // Calculate duration from timestamps
+        const startTime = new Date(activity.start_time);
+        const endTime = new Date(activity.end_time);
+        const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+        if (durationMinutes > 0 && durationMinutes < 120) { // Valid feeding duration (less than 2 hours)
+          const currentAvg = dailyData[date].avgDuration;
+          const currentCount = dailyData[date].frequency;
+          dailyData[date].avgDuration = ((currentAvg * (currentCount - 1)) + durationMinutes) / currentCount;
+        }
       }
-      if (activity.feeding_amount) {
+      
+      // Accurate amount tracking
+      if (activity.feeding_amount && activity.feeding_amount > 0) {
         dailyData[date].totalAmount += activity.feeding_amount;
       }
     });
@@ -204,29 +254,73 @@ const ExpertTips = ({ isOpen, onClose }: ExpertTipsProps) => {
     const avgSleep = getAverageSleep();
     const avgWakings = getAverageWakings();
     const trend = getSleepTrend();
+    const avgFeedings = feedingData.length > 0 ? feedingData.reduce((sum, day) => sum + day.frequency, 0) / feedingData.length : 0;
     
     const tips = [];
     
-    if (avgSleep < 480) { // Less than 8 hours
+    // Age-appropriate sleep recommendations
+    if (avgSleep < 600 && avgSleep > 0) { // Less than 10 hours (adjust based on age)
       tips.push({
-        title: "Increase Total Sleep Time",
-        description: "Your baby is getting less sleep than recommended. Consider earlier bedtimes or longer naps.",
+        title: "Optimize Sleep Duration",
+        description: `Current average: ${formatTime(Math.round(avgSleep))}. Most babies need 11-14 hours of sleep per day. Consider adjusting nap schedules or bedtime routine.`,
         priority: "high"
       });
     }
     
-    if (avgWakings > 3) {
+    if (avgWakings > 2.5) {
       tips.push({
         title: "Reduce Night Wakings",
-        description: "Multiple night wakings detected. Try implementing gentle sleep training techniques.",
+        description: `Average ${Math.round(avgWakings * 10) / 10} wakings per night. This may indicate hunger, discomfort, or sleep associations. Consider gentle sleep training or environmental adjustments.`,
+        priority: "medium"
+      });
+    }
+    
+    if (avgFeedings > 12) {
+      tips.push({
+        title: "Monitor Feeding Frequency", 
+        description: `High feeding frequency (${Math.round(avgFeedings)} per day) may indicate growth spurts or insufficient intake per feeding. Consult your pediatrician if concerned.`,
+        priority: "medium"
+      });
+    } else if (avgFeedings < 6 && avgFeedings > 0) {
+      tips.push({
+        title: "Feeding Frequency Check",
+        description: `Lower feeding frequency (${Math.round(avgFeedings)} per day). Ensure baby is getting adequate nutrition. Monitor weight gain and consult pediatrician.`,
         priority: "medium"
       });
     }
     
     if (trend === 'improving') {
       tips.push({
-        title: "Great Progress!",
-        description: "Sleep patterns are improving. Keep up the current routine.",
+        title: "Excellent Progress!",
+        description: "Sleep patterns are improving consistently. Your current routine is working well - maintain consistency for continued success.",
+        priority: "low"
+      });
+    } else if (trend === 'declining') {
+      tips.push({
+        title: "Sleep Pattern Concerns",
+        description: "Sleep duration has been decreasing. Consider reviewing recent changes in routine, environment, or developmental milestones that might be affecting sleep.",
+        priority: "high"
+      });
+    }
+    
+    // Add age-specific tips based on data patterns
+    if (sleepData.length > 7) {
+      const recentWakings = sleepData.slice(-7).reduce((sum, day) => sum + day.nightWakings, 0) / 7;
+      const earlierWakings = sleepData.slice(0, 7).reduce((sum, day) => sum + day.nightWakings, 0) / 7;
+      
+      if (recentWakings > earlierWakings + 1) {
+        tips.push({
+          title: "Sleep Regression Alert",
+          description: "Recent increase in night wakings may indicate a sleep regression, growth spurt, or developmental leap. These are temporary phases.",
+          priority: "medium"
+        });
+      }
+    }
+    
+    if (tips.length === 0) {
+      tips.push({
+        title: "Healthy Sleep Patterns",
+        description: "Your baby's sleep and feeding patterns look healthy! Continue with your current routine and monitor for any changes.",
         priority: "low"
       });
     }
