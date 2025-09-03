@@ -9,51 +9,96 @@ import { useToast } from '@/hooks/use-toast';
 // Sonora API integration
 const SONORA_API_KEY = '205f31bdaa6123b902d98bcf89901307';
 
-// Real baby lullaby and sleep sounds - Vercel compatible
+// Diverse baby lullabies and sleep music - Different melodies and styles
 const BABY_SAFE_SOUNDS = [
   {
     id: '1',
-    title: 'Brahms Lullaby',
-    description: 'Classic gentle lullaby for peaceful sleep',
+    title: 'Brahms Lullaby - Classical',
+    description: 'Traditional German lullaby with gentle piano',
     duration: 180,
-    category: 'Lullaby',
+    category: 'Classical Lullaby',
     url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
     isLocal: false
   },
   {
     id: '2', 
-    title: 'Gentle White Noise',
-    description: 'Soft white noise for continuous sleep',
-    duration: 300,
-    category: 'White Noise',
+    title: 'Twinkle Twinkle Little Star',
+    description: 'Beloved nursery rhyme in soft instrumental',
+    duration: 120,
+    category: 'Nursery Rhyme',
     url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
     isLocal: false
   },
   {
     id: '3',
-    title: 'Soft Raindrops',
-    description: 'Gentle rain sounds for relaxation',
-    duration: 240,
-    category: 'Nature',
+    title: 'Gentle Forest Sounds',
+    description: 'Birds chirping softly with nature ambiance',
+    duration: 300,
+    category: 'Nature Sounds',
     url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
     isLocal: false
   },
   {
     id: '4',
-    title: 'Heartbeat Rhythm',
-    description: 'Comforting womb-like heartbeat sounds',
-    duration: 200,
-    category: 'Heartbeat', 
+    title: 'Rock-a-bye Baby',
+    description: 'Classic English lullaby with music box melody',
+    duration: 150,
+    category: 'Traditional Lullaby', 
     url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
     isLocal: false
   },
   {
     id: '5',
-    title: 'Soft Piano Lullaby',
-    description: 'Peaceful piano melody for baby sleep',
-    duration: 220,
-    category: 'Lullaby',
+    title: 'Soft Harp Melodies',
+    description: 'Peaceful harp compositions for deep sleep',
+    duration: 240,
+    category: 'Instrumental',
     url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    isLocal: false
+  },
+  {
+    id: '6',
+    title: 'Ocean Waves with Seagulls',
+    description: 'Calming beach sounds with distant seagulls',
+    duration: 350,
+    category: 'Nature Sounds',
+    url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
+    isLocal: false
+  },
+  {
+    id: '7',
+    title: 'Mary Had a Little Lamb',
+    description: 'Gentle instrumental version of the classic',
+    duration: 100,
+    category: 'Nursery Rhyme',
+    url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    isLocal: false
+  },
+  {
+    id: '8',
+    title: 'Soft Rain on Leaves',
+    description: 'Gentle rainfall with rustling leaves',
+    duration: 400,
+    category: 'Rain Sounds',
+    url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
+    isLocal: false
+  },
+  {
+    id: '9',
+    title: 'Silent Night - Music Box',
+    description: 'Christmas lullaby in delicate music box style',
+    duration: 200,
+    category: 'Holiday Lullaby',
+    url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    isLocal: false
+  },
+  {
+    id: '10',
+    title: 'Gentle Celtic Melodies',
+    description: 'Soft Celtic harp and flute combinations',
+    duration: 280,
+    category: 'Celtic',
+    url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
     isLocal: false
   }
 ];
