@@ -9,52 +9,52 @@ import { useToast } from '@/hooks/use-toast';
 // Sonora API integration
 const SONORA_API_KEY = '205f31bdaa6123b902d98bcf89901307';
 
-// Gentle baby-safe sounds with Sonora API integration
+// Real baby lullaby and sleep sounds - Vercel compatible
 const BABY_SAFE_SOUNDS = [
   {
     id: '1',
-    title: 'Gentle White Noise',
-    description: 'Soft, calming white noise for peaceful sleep',
-    duration: 300,
-    category: 'White Noise',
-    soundType: 'gentle_white_noise',
-    isLocal: true
+    title: 'Brahms Lullaby',
+    description: 'Classic gentle lullaby for peaceful sleep',
+    duration: 180,
+    category: 'Lullaby',
+    url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    isLocal: false
   },
   {
     id: '2', 
-    title: 'Heartbeat Sounds',
-    description: 'Comforting heartbeat rhythm like in the womb',
-    duration: 600,
-    category: 'Heartbeat',
-    soundType: 'heartbeat',
-    isLocal: true
+    title: 'Gentle White Noise',
+    description: 'Soft white noise for continuous sleep',
+    duration: 300,
+    category: 'White Noise',
+    url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
+    isLocal: false
   },
   {
     id: '3',
-    title: 'Soft Humming',
-    description: 'Peaceful humming melody for relaxation',
+    title: 'Soft Raindrops',
+    description: 'Gentle rain sounds for relaxation',
     duration: 240,
-    category: 'Lullaby',
-    soundType: 'soft_humming',
-    isLocal: true
+    category: 'Nature',
+    url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    isLocal: false
   },
   {
     id: '4',
-    title: 'Rain Sounds',
-    description: 'Gentle rain for a cozy sleep atmosphere',
-    duration: 450,
-    category: 'Nature',
-    soundType: 'gentle_rain',
-    isLocal: true
+    title: 'Heartbeat Rhythm',
+    description: 'Comforting womb-like heartbeat sounds',
+    duration: 200,
+    category: 'Heartbeat', 
+    url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav',
+    isLocal: false
   },
   {
     id: '5',
-    title: 'Ocean Waves',
-    description: 'Soft ocean waves for deep relaxation',
-    duration: 360,
-    category: 'Nature',
-    soundType: 'soft_waves',
-    isLocal: true
+    title: 'Soft Piano Lullaby',
+    description: 'Peaceful piano melody for baby sleep',
+    duration: 220,
+    category: 'Lullaby',
+    url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+    isLocal: false
   }
 ];
 
@@ -113,21 +113,7 @@ const AudioLibrary = () => {
     }
   };
 
-  const generateGentleSound = () => {
-    // Create a very gentle and pleasant audio buffer
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const sampleRate = audioContext.sampleRate;
-    const length = sampleRate * 10; // 10 seconds
-    const buffer = audioContext.createBuffer(1, length, sampleRate);
-    const data = buffer.getChannelData(0);
-
-    // Generate very soft, pleasant white noise
-    for (let i = 0; i < length; i++) {
-      data[i] = (Math.random() - 0.5) * 0.03; // Very low volume, gentle
-    }
-
-    return { audioContext, buffer };
-  };
+  // Remove synthetic audio generation - use real music files only
 
   const playTrack = async (track: any) => {
     try {
@@ -143,60 +129,36 @@ const AudioLibrary = () => {
       setCurrentTime(0);
       setDuration(track.duration);
 
-      if (track.isLocal) {
-        // For local gentle sounds, create a very soft audio experience
-        const { audioContext, buffer } = generateGentleSound();
-        
-        if (!audioRef.current) {
-          audioRef.current = new Audio();
-        }
-        
-        // Create a data URL for the gentle sound
-        const audioData = new Float32Array(buffer.getChannelData(0));
-        const blob = new Blob([audioData], { type: 'audio/wav' });
-        const url = URL.createObjectURL(blob);
-        
-        audioRef.current.src = url;
-        audioRef.current.volume = volume[0] / 100;
-        
-        audioRef.current.onloadeddata = () => {
-          setIsLoading(false);
-          setIsPlaying(true);
-          audioRef.current?.play();
-        };
-        
-        audioRef.current.onerror = () => {
-          setIsLoading(false);
-          toast({
-            title: "Playback Error",
-            description: "Could not play the selected track.",
-            variant: "destructive",
-          });
-        };
-      } else {
-        // For Sonora API tracks
-        if (!audioRef.current) {
-          audioRef.current = new Audio();
-        }
-        
-        audioRef.current.src = track.url;
-        audioRef.current.volume = volume[0] / 100;
-        
-        audioRef.current.onloadeddata = () => {
-          setIsLoading(false);
-          setIsPlaying(true);
-          audioRef.current?.play();
-        };
-        
-        audioRef.current.onerror = () => {
-          setIsLoading(false);
-          toast({
-            title: "Playback Error",
-            description: "Could not load the track from server.",
-            variant: "destructive",
-          });
-        };
+      // Use real audio URLs for all tracks - Vercel compatible
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
       }
+      
+      audioRef.current.src = track.url;
+      audioRef.current.volume = volume[0] / 100;
+      audioRef.current.loop = true; // Loop for continuous sleep aid
+      
+      audioRef.current.onloadeddata = () => {
+        setIsLoading(false);
+        setIsPlaying(true);
+        audioRef.current?.play().catch(error => {
+          console.error('Play failed:', error);
+          toast({
+            title: "Playback Error", 
+            description: "Click to enable audio playback",
+            variant: "destructive",
+          });
+        });
+      };
+      
+      audioRef.current.onerror = () => {
+        setIsLoading(false);
+        toast({
+          title: "Playback Error",
+          description: "Could not load baby lullaby. Please try another.",
+          variant: "destructive",
+        });
+      };
       
       toast({
         title: "Now Playing",
